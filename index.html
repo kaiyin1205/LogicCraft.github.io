@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithms Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <nav id="sidebar">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 8px;">LogicCraft</h2>                
+                <p style="text-align: center; margin: 10px 0;
+                      font-family: 'Playfair Display', serif;
+                      font-style: italic;
+                      font-size: 1.1em;
+                      color: #ff4757;
+                      letter-spacing: 0.05em;
+                      font-weight: 500;
+                      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+                    ">
+                    Crafting Algorithm Insights
+                </p>
+            </div>
+            
+            <div class="nav-category">
+                <h3>Data Structures</h3>
+                    <ul>
+                        <li><button data-viz="stack"><span>Stack</span></button></li>
+                        <li><button data-viz="queue"><span>Queue</span></button></li>
+                        <li><button data-viz="linkedList"><span>Singly Linked List</span></button></li>
+                        <li><button data-viz="bst"><span>Binary Search Tree</span></button></li>
+                        <li><button data-viz="minHeap"><span>Min-Heap</span></button></li>
+                        <li><button data-viz="maxHeap"><span>Max-Heap</span></button></li>
+                    </ul>
+            </div>
+
+            <div class="nav-category">
+                <h3>Sorting Algorithms</h3>
+                    <ul>
+                        <li><button data-viz="bubbleSort"><span>Bubble Sort</span></button></li>
+                        <li><button data-viz="selectionSort"><span>Selection Sort</span></button></li>
+                        <li><button data-viz="insertionSort"><span>Insertion Sort</span></button></li>
+                        <li><button data-viz="mergeSort"><span>Merge Sort</span></button></li>
+                        <li><button data-viz="quickSort"><span>Quick Sort</span></button></li>
+                        <li><button data-viz="heapSort"><span>Heap Sort</span></button></li>
+                    </ul>
+            </div>
+
+            <div class="nav-category">
+                <h3>Graph Algorithms</h3>
+                    <ul>
+                        <li><button data-viz="bfs"><span>Breadth-First Search</span></button></li>
+                        <li><button data-viz="dfs"><span>Depth-First Search</span></button></li>
+                        <li><button data-viz="prim"><span>Prim's MST</span></button></li>
+                    </ul>
+            </div>
+
+            <div class="nav-category">
+                <h3>Other Algorithms</h3>
+                    <ul>
+                        <li><button data-viz="towerOfHanoi"><span>Tower of Hanoi</span></button></li>
+                        <li><button data-viz="naiveStringSearch"><span>Naive String Search</span></button></li>
+                        <li><button data-viz="sudokuSolver"><span>Sudoku Solver</span></button></li>
+                    </ul>
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <div id="controls-info-area">
+                <div id="controls">
+                    <button id="start-button" class="control-button">Start</button>
+                    <button id="pause-button" class="control-button" disabled>Pause</button>
+                    <button id="reset-button" class="control-button">Reset</button>
+                     <label for="speed-slider">Speed:</label>
+                    <input type="range" id="speed-slider" min="10" max="1000" value="400" >
+                     <label for="size-slider" id="size-label">Size:</label>
+                    <input type="range" id="size-slider" min="5" max="100" value="20" >
+                    <div id="structure-controls"></div>
+                </div>
+                 <div id="info-panel">
+                    <h3 id="viz-title">Select a Visualization</h3>
+                    <p id="viz-description">Choose an algorithm or data structure from the sidebar to visualize its process.</p>
+                </div>
+            </div>
+
+            <div id="visualization-area">
+                <p style="color: var(--text-secondary);">Select a visualization from the sidebar.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/dom-setup.js" defer></script>
+    <script src="js/utils.js" defer></script>
+    <script src="js/rendering.js" defer></script>
+    <script src="js/animation-control.js" defer></script>
+
+    <script src="js/visualizations/sorting/bubble.js" defer></script>
+    <script src="js/visualizations/sorting/heap.js" defer></script>
+    <script src="js/visualizations/sorting/insertion.js" defer></script>
+    <script src="js/visualizations/sorting/merge.js" defer></script>
+    <script src="js/visualizations/sorting/quick.js" defer></script>
+    <script src="js/visualizations/sorting/selection.js" defer></script>
+    
+    <script src="js/visualizations/datastructure/stack.js" defer></script>
+    <script src="js/visualizations/datastructure/queue.js" defer></script>
+    <script src="js/visualizations/datastructure/singlelinkedlist.js" defer></script>
+    <script src="js/visualizations/datastructure/binarysearch.js" defer></script>
+    <script src="js/visualizations/datastructure/minHeap.js" defer></script>
+    <script src="js/visualizations/datastructure/maxHeap.js" defer></script>
+
+    <script src="js/visualizations/graph/graph-utils.js" defer></script>
+    <script src="js/visualizations/graph/bfs.js" defer></script>
+    <script src="js/visualizations/graph/dfs.js" defer></script>
+    <script src="js/visualizations/graph/prim.js" defer></script>
+
+    <script src="js/visualizations/other/hanoi.js" defer></script>            
+    <script src="js/visualizations/other/stringsearch.js" defer></script>   
+    <script src="js/visualizations/other/sudoku.js" defer></script> 
+    
+    <script src="js/script.js" defer></script>
+
+</body>
+</html>

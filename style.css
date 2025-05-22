@@ -1,0 +1,996 @@
+/* --- Modern Theme & Base Styles --- */
+:root {
+    --bg-dark: #1a1a2e;        /* Deep dark blue */
+    --bg-medium: #16213e;      /* Slightly lighter dark blue */
+    --bg-light: #0f3460;       /* Lighter blue for containers */
+    --primary: #e94560;        /* Vibrant pink/red accent */
+    --secondary: #53d8fb;      /* Bright cyan accent */
+    --tertiary: #9d65c9;       /* Purple accent */
+    --text-primary: #e0fbfc;   /* Very light cyan/white text */
+    --text-secondary: #a7c0cd; /* Lighter grey text */
+    --highlight-compare: #f9c74f; /* Yellow */
+    --highlight-swap: #e94560;    /* Primary accent (Pink/Red) */
+    --highlight-sorted: #57cc99;  /* Mint Green */
+    --highlight-special: #6f7af5;; /* Purple */
+    --highlight-pivot: #f3722c;   /* Orange for Pivot */
+    --highlight-traverse: var(--secondary); /* Cyan */
+    --highlight-path: var(--highlight-sorted); /* Green for path/MST edges */
+    --highlight-visited: #6c757d; /* Grey */
+
+    --bar-width: 15px;
+    --bar-gap: 3px;
+    --base-speed: 150; /* ms - Slightly slower default */
+    --border-radius: 8px;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    margin: 0; /* Usually already there */
+    padding: 0; /* Usually already there */
+    overflow: hidden; /* Prevent body scroll if app-container handles all scrolling */
+}
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    display: flex; 
+    flex-direction: column; /* MODIFIED: Body is now a column flex container */
+    min-height: 100%; /* MODIFIED: Ensure body takes at least full viewport height */
+    /* overflow-x: hidden; */ /* Already handled by html, body overflow:hidden */
+}
+#app-container {
+    display: flex; /* Was already flex, for sidebar + main-content layout */
+    width: 100%;
+    flex-grow: 1; /* MODIFIED: app-container will take available space not used by footer */
+    overflow: hidden; /* MODIFIED/ENSURED: To prevent app-container itself from scrolling if its children manage overflow */
+    /* height: 100%; */ /* REMOVED/REPLACED by flex-grow in parent */
+}
+
+
+#sidebar {
+    width: 295px;
+    background: linear-gradient(180deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+    padding: 25px 15px;
+    border-right: 3px solid var(--primary);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;   /* This will activate when content exceeds the height */
+    flex-shrink: 0;
+    box-shadow: 4px 0px 15px rgba(0, 0, 0, 0.2);
+    height: 100%;       /* Make sidebar take full height of its parent #app-container */
+                        /* Because of padding, content area will be less than 100% */
+}
+
+#main-content {
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column; /* Ensures children (controls, viz-area, footer) stack vertically */
+    padding: 25px;
+    overflow: hidden; 
+}
+#controls-info-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;       /* CHANGED: Makes #controls and #info-panel take the full height of this container */
+    background-color: var(--bg-medium);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    min-height: 160px;          /* INCREASED: Set a generous minimum height. Adjust as needed for your longest description or tallest controls. */
+    flex-wrap: nowrap;
+    gap: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 300px; /* DECREASE this if #info-panel needs more space and controls can be narrower */
+                       /* OR ensure the sum of min-widths + gap doesn't exceed the parent too much */
+}
+
+#info-panel {
+    flex-basis: 450px; /* Keep or adjust your desired width */
+    min-width: 350px; /* Keep or adjust your desired min-width */
+    text-align: right; /* Title will align right */
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;            /* ADDED: To control internal alignment */
+    flex-direction: column;   /* ADDED: Stack title and description vertically */
+    justify-content: center;  /* ADDED: Vertically center title & description within #info-panel's box */
+}
+
+#visualization-area {
+    flex-grow: 1;
+    background-color: var(--bg-medium);
+    border-radius: var(--border-radius);
+    padding: 25px; /* This padding reduces usable height */
+    display: flex;
+    justify-content: center;
+    align-items: middle; /* CHANGED: Aligns bars to the bottom, good for stability */
+    min-height: 450px;   /* INCREASED: Try a larger value. Adjust as needed. */
+                          /* You might even need 500px or more depending on max bar height + scale effect */
+    overflow: auto;       /* Keep for cases where content genuinely exceeds (e.g., very wide graph) */
+    position: relative;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+    flex-grow: 1; 
+    overflow: auto; 
+}
+
+/* --- Sidebar Navigation --- */
+#sidebar h2 {
+    color: var(--primary);
+    margin-bottom: 0px;
+    text-align: center;
+    font-size: 1.6em;
+    font-weight: 600;
+     text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.nav-category {
+    margin-bottom: 25px;
+}
+
+.nav-category h3 {
+    color: var(--secondary);
+    margin-bottom: 12px;
+    font-size: 1.2em;
+    border-bottom: 2px solid var(--secondary);
+    padding-bottom: 6px;
+    font-weight: 500;
+}
+
+#sidebar ul {
+    list-style: none;
+}
+
+#sidebar li button {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    padding: 10px 0 10px 15px; /* Added left padding */
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.1em;
+    border-radius: 5px;
+    transition: all 0.25s ease-out;
+    position: relative; /* For pseudo-element */
+    overflow: hidden;
+}
+ #sidebar li button::before { /* Hover effect */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--primary));
+     transition: left 0.3s ease-out;
+     z-index: 0;
+     opacity: 0.6;
+}
+
+#sidebar li button:hover {
+    color: white;
+    transform: translateX(5px);
+}
+ #sidebar li button:hover::before {
+     left: 0;
+ }
+
+
+#sidebar li button span { /* Keep text above hover effect */
+    position: relative;
+    z-index: 1;
+}
+
+
+#sidebar li button.active {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+}
+ #sidebar li button.active::before {
+     display: none; /* Hide hover effect when active */
+ }
+
+
+/* --- Controls Styling --- */
+.control-button, #speed-slider, #size-slider, #structure-controls input, #structure-controls button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    background: linear-gradient(145deg, var(--primary), #c73b50);
+    color: white;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.control-button:hover:not(:disabled) {
+     transform: translateY(-2px);
+     box-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+     filter: brightness(1.1);
+}
+ .control-button:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.control-button:disabled {
+     background: #5a6268; /* Darker grey */
+     cursor: not-allowed;
+     opacity: 0.7;
+     box-shadow: none;
+}
+
+#reset-button {
+    background: linear-gradient(145deg, var(--secondary), #48b8d0);
+}
+#reset-button:hover:not(:disabled) {
+     filter: brightness(1.1);
+}
+
+#structure-controls button { /* Specific structure buttons */
+     background: linear-gradient(145deg, var(--tertiary), #8a56ac);
+     padding: 8px 12px; /* Slightly smaller */
+     font-size: 1.0em;
+
+ }
+  #structure-controls input {
+     padding: 8px;
+     background: var(--bg-dark);
+     border: 1px solid var(--tertiary);
+     color: var(--text-primary);
+     border-radius: 5px;
+     box-shadow: none;
+     width: 80px; /* Fixed width */
+ }
+
+ #structure-controls {
+    display: flex;      /* Make its children (inputs, buttons) flex items */
+    flex-wrap: wrap;    /* Allow these controls to wrap to new lines if many */
+    gap: 8px;           /* Space between individual structure control items */
+    width: 100%;        /* Make #structure-controls take the full width available to it on its "line" within #controls */
+    margin-top: 10px;   /* Add some space above it, separating from main Start/Pause/sliders */
+    align-items: center;/* Vertically align items within #structure-controls if they wrap and have different heights */
+    justify-content: flex-start; /* Align structure controls to the left */
+}
+
+
+label {
+    margin-left: 10px;
+    margin-right: 5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+input[type="range"] {
+    cursor: pointer;
+    width: 130px;
+    accent-color: var(--primary); /* Modern way to color range sliders */
+     vertical-align: middle;
+}
+
+/* --- Info Panel --- */
+#info-panel h3 {
+    color: var(--primary);
+    margin-bottom: 8px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+#info-panel p {
+    font-size: 1.0em;
+    line-height: 1.5;
+    max-height: none;         /* CHANGED: Allow paragraph to take needed height */
+    overflow-y: hidden;       /* CHANGED: Hide scrollbar (text should fit if min-height of parent is good) */
+                              /* If you absolutely want a scrollbar for exceptionally long text, use 'auto' */
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+    text-align: justify;      /* ADDED: Justify the description text */
+    margin-top: 5px;          /* ADDED: Add a little space between title and description */
+}
+
+ #info-panel p strong { /* Highlight key info */
+     color: var(--secondary);
+     font-weight: 600;
+ }
+ #info-panel p code { /* Style pseudocode snippets */
+     background-color: var(--bg-dark);
+     padding: 2px 4px;
+     border-radius: 4px;
+     font-family: 'Courier New', Courier, monospace;
+     font-size: 0.9em;
+     color: var(--highlight-compare);
+ }
+
+
+/* --- Visualization Area Elements --- */
+
+/* General */
+.viz-element {
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.3s ease, height 0.3s ease, width 0.3s ease, opacity 0.3s ease, left 0.3s ease, top 0.3s ease;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--bg-dark); /* Darker text on light elements */
+    border: 1px solid transparent; /* Base border */
+    box-sizing: border-box;
+    position: relative; /* Needed for some positioning/pseudo-elements */
+}
+
+/* Bars (Sorting, Heap) */
+.bar {
+    width: var(--bar-width);
+    margin: 0 var(--bar-gap);
+    background: linear-gradient(180deg, var(--secondary) 0%, var(--tertiary) 100%);
+    display: inline-block; /* Or 'flex' if you prefer for internal alignment */
+    vertical-align: bottom;
+    text-align: center;    /* For the .bar-value if it were a direct child not absolutely positioned */
+    position: relative; 
+    font-size: 23.5px;
+    color: rgba(255, 255, 255, 0.7);
+     border-radius: 3px 3px 0 0; /* Rounded top */
+     box-shadow: inset 0 -2px 4px rgba(0,0,0,0.2);
+     border: none; /* Override default border */
+}
+
+.bar-value {
+    position: absolute;
+    /* bottom: -20px; */ /* REMOVE this */
+    bottom: 5px;       /* ADDED: Position 5px from the bottom, INSIDE the bar */
+    left: 0;
+    width: 100%;
+    font-size: 0.7em;     /* REDUCED slightly to fit better inside smaller bars */
+    color: rgba(255, 255, 255, 0.9); /* Light color for better contrast against bar */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7); /* Stronger shadow for readability */
+    text-align: center; /* Ensure it's centered */
+    z-index: 1;         /* Ensure it's above the bar's main background */
+    pointer-events: none; /* So it doesn't interfere with mouse events on the bar itself, if any */
+}
+
+/* Stack/Queue Elements */
+.stack-queue-container {
+     display: flex;
+     flex-direction: column-reverse; /* Stack grows upwards */
+     align-items: center;
+     width: 120px;
+     height: 100%;
+     border: 3px dashed var(--secondary);
+     border-radius: var(--border-radius);
+     padding: 10px;
+     min-height: 300px;
+     background: rgba(0,0,0,0.1);
+}
+ .queue-container {
+     flex-direction: row; /* Queue goes left-to-right */
+     align-items: flex-end;
+     width: auto; /* Width based on content */
+     max-width: 90%;
+     height: 70px;
+     min-width: 300px;
+     border: 3px dashed var(--tertiary);
+     overflow-x: auto; /* Scroll if queue gets long */
+     padding: 10px;
+ }
+
+.stack-element, .queue-element {
+    width: 70px;
+    height: 45px;
+    background: linear-gradient(145deg, var(--secondary), var(--tertiary));
+    margin-bottom: 8px; /* Stack spacing */
+    margin-right: 8px; /* Queue spacing */
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1em;
+     color: white;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+     flex-shrink: 0; /* Prevent shrinking */
+}
+
+/* Heap/Tree/Graph Nodes */
+ .node-container {
+     position: relative;
+     width: 100%;
+     height: 100%;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+ }
+
+.node {
+    position: absolute;
+    width: 45px;
+    height: 45px;
+    background: radial-gradient(circle, var(--secondary) 0%, var(--tertiary) 100%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1em;
+    color: white;
+    border: 2px solid var(--bg-dark);
+    z-index: 10;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+    cursor: default; /* Indicate non-interactive normally */
+}
+ .node:hover { /* Slight interaction feedback */
+    transform: scale(1.05);
+ }
+ .node-value { /* Separate element for value if needed */
+     font-size: 0.9em;
+ }
+  .node-cost { /* For Dijkstra/Prim */
+     position: absolute;
+     bottom: -18px;
+     font-size: 0.75em;
+     color: var(--highlight-compare);
+     background-color: rgba(0,0,0,0.5);
+     padding: 1px 3px;
+     border-radius: 3px;
+ }
+
+
+.edge {
+    position: absolute;
+    background-color: var(--text-secondary);
+    height: 3px;
+    transform-origin: 0 0;
+    z-index: 5;
+    transition: background-color 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+    opacity: 0.7;
+}
+ .edge-weight {
+     position: absolute;
+     font-size: 0.8em;
+     color: var(--text-secondary);
+     background-color: var(--bg-medium);
+     padding: 1px 4px;
+     border-radius: 3px;
+     z-index: 6;
+     /* Position calculation in JS */
+ }
+
+
+/* Linked List Nodes (Singly & Doubly) */
+.ll-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto; /* Adjust height based on content */
+     min-height: 100px;
+    width: 100%;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.ll-node {
+     min-width: 60px;
+     height: 45px;
+     background: linear-gradient(145deg, var(--tertiary), #8a56ac);
+     border: 1px solid var(--bg-dark);
+     border-radius: var(--border-radius);
+     padding: 0 12px;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     margin-right: 45px; /* Space for next arrow */
+     position: relative;
+     font-size: 1.1em;
+     white-space: nowrap;
+     color: white;
+     box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+     flex-shrink: 0;
+}
+ .ll-node.dll-node { /* Specific style for doubly linked list */
+     margin-left: 35px; /* Extra space for prev arrow */
+     margin-right: 35px;
+ }
+
+.ll-node::after { /* Next Arrow */
+     content: '→';
+     position: absolute;
+     right: -30px; /* Position arrow */
+     top: 50%;
+     transform: translateY(-50%);
+     font-size: 2em;
+     color: var(--text-secondary);
+     transition: color 0.3s ease;
+}
+ .ll-node.dll-node::before { /* Prev Arrow (for DLL) */
+     content: '←';
+     position: absolute;
+     left: -30px;
+     top: 50%;
+     transform: translateY(-50%);
+     font-size: 2em;
+     color: var(--text-secondary);
+      transition: color 0.3s ease;
+ }
+
+.ll-node.tail::after { content: '⌀'; color: #6c757d; } /* Null symbol for tail */
+.ll-node.head.dll-node::before { content: '⌀'; color: #6c757d; } /* Null symbol for head prev */
+
+.ll-node.head {
+    background: linear-gradient(145deg, var(--primary), #c73b50); /* Different color for head */
+}
+
+/* Hash Table */
+.hashtable-container {
+    display: flex;
+    align-items: flex-start; /* Align buckets to top */
+    width: 100%;
+    gap: 5px; /* Gap between buckets */
+    flex-wrap: wrap; /* Allow wrapping if too many buckets */
+    justify-content: center;
+}
+.hashtable-bucket {
+    border: 2px solid var(--tertiary);
+    border-radius: 5px;
+    min-height: 60px;
+    min-width: 70px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column; /* Stack items in bucket */
+    align-items: center;
+    background: rgba(0,0,0,0.1);
+     position: relative; /* For index label */
+     margin-bottom: 25px; /* Space for index label below */
+}
+ .hashtable-bucket-index {
+     position: absolute;
+     top: -22px; /* Position above */
+     left: 50%;
+     transform: translateX(-50%);
+     font-size: 0.8em;
+     color: var(--text-secondary);
+     background-color: var(--bg-medium);
+     padding: 0 3px;
+ }
+.hashtable-item {
+    width: 55px;
+    height: 35px;
+    background-color: var(--secondary);
+    color: var(--bg-dark);
+    border-radius: 4px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9em;
+}
+/* --- Styles for Other Algorithms (More Specific) --- */
+
+
+/* Tower of Hanoi */
+/* Tower of Hanoi */
+.hanoi-visualization-container { 
+    display: flex;
+    justify-content: space-around; 
+    align-items: flex-end; 
+    width: 100%;
+    height: 100%;
+    padding-bottom: 50px; 
+    position: relative;
+}
+
+.hanoi-visualization-container .hanoi-rod-wrapper {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;   
+    margin: 0 10px;        
+}
+
+.hanoi-visualization-container .hanoi-rod { 
+    width: 12px; /* MODIFIED: Slightly thicker rod */
+    min-height: 200px; /* MODIFIED: Increased min-height for more disks */
+    height: 80%; /* MODIFIED: Rod height relative to its wrapper or container, can make it larger if needed */
+    background-color: var(--text-secondary);
+    border-radius: 6px 6px 0 0; /* MODIFIED: Adjusted border-radius for thicker rod */
+    position: relative; 
+    display: flex;
+    flex-direction: column-reverse; 
+    align-items: center;
+    z-index: 1;
+}
+
+.hanoi-visualization-container .hanoi-base { 
+     position: absolute;
+     bottom: -12px; /* MODIFIED: Adjusted for thicker rod */
+     left: 50%;
+     transform: translateX(-50%);
+     width: 150px; /* MODIFIED: Slightly wider base */
+     height: 12px; /* MODIFIED: Thicker base */
+     background-color: var(--text-secondary);
+     border-radius: 6px; /* MODIFIED: Adjusted border-radius */
+ }
+
+.hanoi-visualization-container .hanoi-disk { 
+    height: 20px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--secondary), var(--tertiary));
+    position: absolute; 
+    left: 50%;
+    transform: translateX(-50%); 
+    transition: bottom 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.3s ease-in-out, left 0.3s ease-in-out; 
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    z-index: 10; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white; 
+    font-size: 0.9em; 
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5); 
+}
+ 
+.hanoi-visualization-container .hanoi-rod-name {
+    margin-top: 15px; 
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+ /* data-size specific styles for disks */
+.hanoi-disk[data-size="1"] { background: #e94560; width: 50px; } 
+.hanoi-disk[data-size="2"] { background: #f3722c; width: 70px; }
+.hanoi-disk[data-size="3"] { background: #f9c74f; width: 90px; }
+.hanoi-disk[data-size="4"] { background: #57cc99; width: 110px; }
+.hanoi-disk[data-size="5"] { background: #53d8fb; width: 130px; }
+.hanoi-disk[data-size="6"] { background: var(--tertiary); width: 150px; }
+.hanoi-disk[data-size="7"] { background: #6f7af5; width: 170px; }
+
+/* --- Highlighting Classes --- */
+/* Ensure .swapping is effective for hanoi-disk if not already globally styled */
+.hanoi-disk.swapping {
+    /* Example: slightly different highlight for hanoi if needed */
+    box-shadow: 0 0 15px var(--highlight-swap);
+    /* transform: scale(1.05) translateX(-50%); Ensure transform for centering is maintained if scaled */
+}
+
+/* Naive String Search */
+/* Prefix with .stringsearch-visualization-container */
+.stringsearch-visualization-container { /* New top-level class for string search */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.4em;
+    text-align: center;
+    width: 100%;
+    padding: 20px;
+    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: auto;
+}
+.stringsearch-visualization-container .string-text-line,
+.stringsearch-visualization-container .string-pattern-line { /* Specific */
+    white-space: nowrap;
+    margin-bottom: 10px;
+    min-height: 35px;
+}
+.stringsearch-visualization-container .string-char { /* Specific */
+    display: inline-block;
+    padding: 5px 2px;
+    margin: 0 1px;
+    border: 1px solid var(--text-secondary);
+    border-radius: 4px;
+    min-width: 20px;
+    text-align: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    line-height: 1;
+}
+/* These rules apply the styles */
+.match { background-color: var(--highlight-sorted) !important; color: var(--bg-dark) !important; border-color: var(--highlight-sorted) !important; }
+.mismatch { background-color: var(--highlight-swap) !important; color: white !important; border-color: var(--highlight-swap) !important;}
+.comparing-char { border-color: var(--highlight-compare) !important; background-color: rgba(249, 199, 79, 0.2) !important;} /* Subtle compare highlight */
+.found { box-shadow: 0 0 15px var(--highlight-sorted); border-color: var(--highlight-sorted) !important; }
+.special { /* Used for text window highlight */
+    background: var(--highlight-special) !important;
+    color: white !important;
+    box-shadow: 0 0 10px var(--highlight-special) !important;
+}
+
+/* Ensure the base .string-char style allows these highlights to show */
+.stringsearch-visualization-container .string-char { /* Specific */
+    display: inline-block;
+    padding: 5px 2px;
+    margin: 0 1px;
+    border: 1px solid var(--text-secondary);
+    border-radius: 4px;
+    min-width: 20px;
+    text-align: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; /* Already has transitions */
+    line-height: 1;
+    color: var(--text-primary); /* Ensure default text color is set */
+    background-color: transparent; /* Ensure default background is transparent or specific */
+}
+
+
+/* Sudoku Solver */
+.sudoku-visualization-container { /* The <table> */
+    border-collapse: collapse;
+    margin: 20px auto; /* Centers the table */
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    /* ADD Properties for Layout Stability */
+    display: table !important;  /* Force table display, overriding potential flex issues */
+    table-layout: fixed;      /* Ensure fixed width/height of cells is respected */
+    flex-shrink: 0;           /* Prevent shrinking in parent flex container */
+}
+
+.sudoku-visualization-container tr { /* Explicitly style rows */
+     display: table-row !important; /* Force row display */
+}
+
+.sudoku-visualization-container .sudoku-cell { /* The <td> */
+     width: 40px;  /* Fixed width */
+     height: 40px; /* Fixed height */
+     border: 1px solid var(--text-secondary);
+     text-align: center;
+     /* ADD vertical align for better number centering */
+     vertical-align: middle !important;
+     font-size: 1.2em;
+     font-weight: bold;
+     color: var(--text-primary);
+     transition: background-color 0.3s ease;
+     /* ADD display property */
+     display: table-cell !important; /* Force cell display */
+}
+
+/* ADD styles for the thicker subgrid borders using classes */
+.sudoku-visualization-container .sudoku-cell.border-bottom {
+    border-bottom-width: 3px;
+    border-bottom-color: var(--secondary); /* Use a different color for emphasis */
+}
+.sudoku-visualization-container .sudoku-cell.border-right {
+    border-right-width: 3px;
+    border-right-color: var(--secondary); /* Use a different color for emphasis */
+}
+/* The specific state classes for sudoku cells */
+.sudoku-visualization-container .sudoku-cell.sudoku-fixed { /* Specific */
+    color: var(--secondary);
+    font-weight: bold;
+}
+.sudoku-visualization-container .sudoku-cell.sudoku-current { /* Specific */
+    background-color: rgba(249, 199, 79, 0.3);
+    outline: 2px solid var(--highlight-compare);
+}
+.sudoku-visualization-container .sudoku-cell.sudoku-placed { /* Specific */
+    background-color: rgba(87, 204, 153, 0.3);
+    color: var(--highlight-sorted); /* Or var(--text-primary) if bg is too light */
+}
+.sudoku-visualization-container .sudoku-cell.sudoku-backtrack { /* Specific */
+    background-color: rgba(233, 69, 96, 0.3);
+    color: var(--highlight-swap); /* Or var(--text-primary) */
+}
+/* If you use a generic '.sorted' class from global highlights for the final solved cells: */
+.sudoku-visualization-container .sudoku-cell.sorted {
+    /* Ensure this doesn't conflict with a global .sorted if its meaning is different elsewhere */
+    background-color: var(--highlight-sorted) !important;
+    color: var(--bg-dark) !important;
+}
+
+/* --- Highlighting Classes --- */
+.comparing { background: var(--highlight-compare) !important; color: var(--bg-dark) !important; }
+.swapping {
+    background: var(--highlight-swap) !important;
+    color: white !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px var(--highlight-swap);
+     z-index: 20; /* Bring swapping elements to front */
+}
+.sorted {
+    background: var(--highlight-sorted) !important;
+    color: var(--bg-dark) !important;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.3) !important; /* Use !important cautiously */
+    border: none !important; /* Ensure no other borders interfere */
+}
+ .pivot {
+    border: 3px solid var(--highlight-pivot) !important;
+    background-color: rgba(243, 114, 44, 0.3) !important;
+}
+.special {
+    background: var(--highlight-special) !important;
+    color: white !important;
+    box-shadow: 0 0 10px var(--highlight-special) !important;
+}
+.traversing { border: 3px dashed var(--highlight-traverse) !important; }
+.target {
+    box-shadow: 0 0 15px var(--highlight-compare) !important;
+    transform: scale(1.1);
+    border: 2px solid var(--highlight-compare) !important; /* Add border for visibility */
+    background-color: var(--highlight-compare) !important; /* Make it stand out */
+    color: var(--bg-dark) !important;
+}
+.visited {
+    background: var(--highlight-visited) !important;
+    opacity: 0.7;
+    color: var(--text-primary) !important;
+    box-shadow: none !important;
+    border-color: transparent !important; /* Make border less prominent */
+}
+.processing {
+    border: 4px solid var(--secondary) !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--secondary) !important;
+}
+.edge-traversed { background-color: var(--highlight-traverse) !important; height: 4px !important; opacity: 1 !important; }
+ .edge-path { background-color: var(--highlight-path) !important; height: 5px !important; opacity: 1 !important; box-shadow: 0 0 8px var(--highlight-path); z-index: 7 !important; }
+
+
+/* --- Utility Classes --- */
+.hidden { display: none !important; }
+
+
+/* --- Responsiveness --- */
+/* @media (max-width: 1300px) { ... } */ /* Comment out or delete the old 1300px block that changes flex-direction */
+                                        /* OR, if you want to keep some other 1300px rules, only modify the parts affecting layout */
+
+/* NEW or MODIFIED Media Query for stacking */
+@media (max-width: 992px) { /* This breakpoint will now control when they stack */
+    #controls-info-area {
+        flex-direction: column;    /* Stack them vertically */
+        align-items: stretch;      /* Make children take full width */
+        gap: 15px;                 /* Adjust gap for vertical stacking */
+    }
+    #controls {
+        min-width: 100%;           /* Controls take full width */
+        flex-grow: 0;              /* No need to grow when stacked like this */
+        /* margin-bottom: 15px; */ /* Gap on parent handles spacing now */
+    }
+    #info-panel {
+        flex-basis: auto;          /* Reset flex-basis */
+        width: 100%;               /* Info panel takes full width */
+        text-align: left;          /* Align text to left when stacked */
+        min-width: unset;          /* Reset min-width from desktop */
+        /* margin-top: 15px; */   /* Gap on parent handles spacing now */
+    }
+
+    /* You might need to re-add other rules from the original 1300px query here if they were unrelated to this specific layout, for example: */
+    /* #sidebar { width: 250px; } */ /* If this was desired at 992px too */
+    /* :root { --bar-width: 12px; --bar-gap: 2px; } */
+}
+
+/* OPTIONAL: Intermediate step if needed between full width and 992px */
+/* This keeps them side-by-side but might adjust proportions */
+@media (max-width: 1300px) and (min-width: 993px) {
+    #controls-info-area {
+        /* Ensure flex-wrap is still nowrap if not set globally */
+        flex-wrap: nowrap;
+    }
+    #info-panel {
+        flex-basis: 250px; /* Example: make info panel a bit smaller */
+        min-width: 220px;
+    }
+    #controls {
+        /* Controls will take up the rest of the space */
+         min-width: 280px; /* Ensure controls don't get too small */
+    }
+    /* Other 1300px rules like sidebar width can go here */
+     #sidebar { width: 250px; }
+     :root { --bar-width: 12px; --bar-gap: 2px; }
+}
+
+ @media (max-width: 992px) {
+     #sidebar { width: 220px; }
+      .control-button, #structure-controls button { padding: 8px 14px; font-size: 0.9em; }
+     input[type="range"] { width: 110px; }
+      #visualization-area { padding: 15px; min-height: 300px; }
+     :root { --bar-width: 10px; --bar-gap: 2px; }
+     .node { width: 40px; height: 40px; font-size: 0.9em; }
+     .ll-node { min-width: 55px; height: 40px; font-size: 1em; margin-right: 40px;}
+      .ll-node::after, .ll-node.dll-node::before { font-size: 1.8em; right: -25px; left: -25px;}
+     .hashtable-bucket { min-width: 65px; }
+     .hashtable-item { width: 50px; height: 30px; }
+ }
+
+ @media (max-width: 768px) {
+     #app-container { flex-direction: column; }
+     #sidebar {
+         width: 100%;
+         height: auto;
+         border-right: none;
+         border-bottom: 3px solid var(--primary);
+         flex-direction: row;
+         flex-wrap: wrap;
+         justify-content: center;
+         padding: 15px 10px;
+         overflow-y: auto;   
+            flex-shrink: 0; 
+     }
+     #sidebar h2 { width: 100%; text-align: center; margin-bottom: 15px; font-size: 1.4em;}
+     .nav-category { margin: 5px 10px; flex-basis: auto; /* Allow categories to wrap naturally */ }
+     .nav-category h3 { font-size: 1.1em; margin-bottom: 8px; padding-bottom: 4px;}
+     #sidebar ul { display: flex; flex-wrap: wrap; justify-content: center; padding-left: 0;}
+     #sidebar li { margin: 3px; }
+     #sidebar li button { padding: 6px 10px; font-size: 0.9em; }
+      #sidebar li button:hover { transform: none; } /* Disable hover transform on mobile */
+
+     #main-content { padding: 15px; max-height: none; }
+     #controls-info-area { padding: 15px; }
+     #controls { justify-content: center; gap: 8px;}
+     .control-button, #structure-controls button, #structure-controls input { margin-bottom: 5px; }
+     label { margin-left: 5px; }
+     input[type="range"] { width: 100px; }
+     #visualization-area { min-height: 250px; padding: 10px; }
+     :root { --bar-width: 8px; --bar-gap: 1px; }
+     .string-search-container { font-size: 1.1em; }
+     .string-char { padding: 4px 6px; min-width: 25px;}
+     .hanoi-rod { height: 70%; }
+     .hanoi-base { width: 120px; }
+     .hanoi-visualization-container .hanoi-rod { min-height: 120px; height: 60%; }
+    .hanoi-visualization-container .hanoi-base { width: 100px; }
+    .hanoi-visualization-container .hanoi-rod-name { font-size: 1em; margin-top: 10px;}
+ }
+
+ @media (max-width: 480px) {
+      :root { --bar-width: 6px; --bar-gap: 1px; }
+      .control-button, #structure-controls button { padding: 6px 10px; font-size: 0.85em; }
+       #structure-controls input { width: 70px; padding: 6px;}
+      #info-panel h3 { font-size: 1.1em; }
+      #info-panel p { font-size: 0.9em; }
+      .node { width: 35px; height: 35px; font-size: 0.8em; }
+      .edge { height: 2px; }
+       .ll-node { min-width: 50px; height: 35px; font-size: 0.9em; margin-right: 35px; padding: 0 8px;}
+      .ll-node::after, .ll-node.dll-node::before { font-size: 1.6em; right: -22px; left: -22px;}
+       .hanoi-disk { height: 15px; }
+       .hanoi-disk[data-size="1"] { width: 30px; }
+       .hanoi-disk[data-size="2"] { width: 45px; }
+       .hanoi-disk[data-size="3"] { width: 60px; }
+       .hanoi-disk[data-size="4"] { width: 75px; }
+       .hanoi-disk[data-size="5"] { width: 90px; }
+       .hashtable-bucket { min-width: 55px; min-height: 50px; }
+       .hashtable-item { width: 45px; height: 28px; }
+       .string-search-container { font-size: 1em; }
+       .string-char { padding: 3px 5px; min-width: 22px;}
+ }
+
+/* --- Footer Styles --- */
+/* --- Footer Styles --- */
+footer {
+    background-color: var(--bg-dark);
+    color: var(--text-secondary);     
+    text-align: center;
+    padding: 12px 20px;              
+    font-size: 0.85em;                 
+    font-weight: bold; /* ADDED: This line makes all text in the footer bold */
+    flex-shrink: 0;                   
+    width: 100%;                      
+    margin-top: auto;                 
+    border-top: 1px solid rgba(255, 255, 255, 0.08); 
+}
+
+
+.footer-link {
+    color: var(--secondary); /* Bright cyan for links (theme accent) */
+    text-decoration: none;
+    font-weight: bold; /* Slightly bolder for keywords */
+    margin: 0 3px; /* Add a little spacing around links */
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+    color: var(--primary); /* Pink/red accent on hover/focus */
+    text-decoration: underline;
+}
